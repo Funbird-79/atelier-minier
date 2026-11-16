@@ -6,10 +6,10 @@
   <meta name="description" content="Configurateur communautaire du MOLE classique. Compare les composants, simule la qualité de fabrication et prépare tes trajets dans Nyx, Stanton et Pyro.">
   <meta name="referrer" content="no-referrer">
   <title>Atelier minier · Configurateur ARGO MOLE</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="catalog.js" defer></script>
+  <link rel="stylesheet" href="style.css?v=2">
+  <script src="catalog.js?v=2" defer></script>
   <script src="model.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=2" defer></script>
 </head>
 <body>
   <header class="top">
@@ -71,6 +71,38 @@
             </span>
           </figcaption>
         </figure>
+        <section class="panel mining-hud" id="mining-hud" aria-labelledby="mining-hud-title" hidden>
+          <header class="hud-header">
+            <h3 id="mining-hud-title">Repères de minage</h3>
+            <label for="hud-turret">Tourelle
+              <select id="hud-turret">
+                <option value="laser0">Centrale</option>
+                <option value="laser1">Gauche</option>
+                <option value="laser2">Droite</option>
+              </select>
+            </label>
+          </header>
+          <div class="hud-layout">
+            <div>
+              <figure class="hud-figure">
+                <div class="hud-photo">
+                  <img src="hud-minage.jpg" alt="Interface de fracture avec la portée à gauche et la jauge de charge à droite" width="1536" height="1191" loading="lazy" decoding="async">
+                  <button type="button" class="hud-pin" data-hud-area="range" aria-pressed="false">Portée</button>
+                  <button type="button" class="hud-pin" data-hud-area="rock" aria-pressed="false">Roche</button>
+                  <button type="button" class="hud-pin" data-hud-area="window" aria-pressed="true">Zone verte</button>
+                  <button type="button" class="hud-pin" data-hud-area="overcharge" aria-pressed="false">Surcharge</button>
+                  <button type="button" class="hud-pin" data-hud-area="power" aria-pressed="false">Intensité</button>
+                </div>
+                <figcaption>Capture en mode fracture · © Cloud Imperium Rights LLC / Ltd.</figcaption>
+              </figure>
+              <div class="hud-choices">
+                <button type="button" class="secondary" data-hud-area="all" aria-pressed="false">Tous les effets</button>
+                <button type="button" class="secondary" data-hud-area="extraction" aria-pressed="false">Après fracture · Extraction</button>
+              </div>
+            </div>
+            <div class="hud-readout" id="hud-readout" aria-live="polite"></div>
+          </div>
+        </section>
         <div class="metrics" aria-label="Indicateurs de la configuration">
           <article class="metric speed">
             <h3>Vitesse quantique</h3>
@@ -164,6 +196,8 @@
           <li><a href="https://github.com/StarCitizenWiki/scunpacked-data/commit/f182b7f111279c9193df81927c9b4dbc8c4f3291">Composants, emplacements, recettes et coordonnées · données 4.10.3</a></li>
           <li><a href="https://codiga.fr/outils/ressources/blueprints">Obtention des blueprints · Codiga</a></li>
           <li><a href="https://starcitizen.tools/Guide:Quantum_travel_mechanics">Modèle de vol quantique · Star Citizen Wiki</a></li>
+          <li><a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360007611573-Mining-Basics">Interface de minage · Roberts Space Industries</a></li>
+          <li><a href="https://starcitizen.tools/Module:Entity/Facet/Mining">Interprétation des modificateurs de minage · Star Citizen Wiki</a></li>
           <li><a href="https://starcitizen.tools/Nyx_system">Portes de Nyx · Star Citizen Wiki</a></li>
           <li><a href="https://uexcorp.space/vehicles/components/">Boutiques signalées par les joueurs · UEX</a></li>
           <li><a href="https://www.citadelsc.com/en/mining/gear/misc-enhanced-ore-pod">Pods renforcés · Citadel</a></li>

@@ -221,3 +221,42 @@ dialog .panel-note { padding: 8px 0; }
 .paint-dialog { width: min(1100px, calc(100% - 24px)); }
 .paint-dialog .result-header { margin-bottom: 9px; }
 .paint-dialog img { display: block; width: 100%; height: auto; max-height: 74vh; object-fit: contain; background: var(--bg); }
+
+.mining-hud { margin-bottom: 12px; padding: 13px; }
+.hud-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 9px; margin-bottom: 12px; }
+.hud-header h3 { margin: 0; font-size: 1rem; letter-spacing: -.018em; }
+.hud-header label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .77rem; }
+.hud-header select { min-height: 34px; padding: 4px 7px; border: 1px solid #3c494e; border-radius: 5px; background: #0e1519; color: var(--text); }
+.hud-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; align-items: start; }
+.hud-figure { margin: 0; }
+.hud-photo { position: relative; border: 1px solid var(--border); border-radius: 7px; background: #090f14; }
+.hud-photo img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.hud-pin {
+  --pin-color: var(--amber);
+  position: absolute; transform: translate(-50%, -50%); min-height: 32px; padding: 4px 8px;
+  border: 1px solid var(--pin-color); border-radius: 5px; background: #0b1115f0; color: var(--pin-color);
+  box-shadow: 0 0 0 2px #061017ae; font-size: .72rem; font-weight: 750; white-space: nowrap;
+}
+.hud-pin[data-hud-area="range"] { left: 16%; top: 31%; }
+.hud-pin[data-hud-area="rock"] { left: 15%; top: 58%; }
+.hud-pin[data-hud-area="window"] { --pin-color: var(--green); left: 84%; top: 54%; }
+.hud-pin[data-hud-area="overcharge"] { --pin-color: var(--pink); left: 83%; top: 30%; }
+.hud-pin[data-hud-area="power"] { --pin-color: #b0caf7; left: 82%; top: 72%; }
+.hud-pin:hover, .hud-pin[aria-pressed="true"] { background: var(--pin-color); color: #11171a; }
+.hud-figure figcaption { color: var(--muted); font-size: .65rem; line-height: 1.45; margin: 6px 0 8px; }
+.hud-choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.hud-choices .secondary { font-size: .73rem; }
+.hud-choices [aria-pressed="true"] { border-color: #87613b; color: var(--amber); background: #2d241a; }
+.hud-readout h4 { margin: 0 0 5px; font-size: .88rem; }
+.hud-readout > p { margin: 0 0 8px; color: var(--muted); font-size: .76rem; line-height: 1.48; }
+.hud-part { margin-top: 7px; padding: 8px 9px; border: 1px solid var(--border); border-radius: 6px; background: #0f161a; }
+.hud-part h5 { margin: 0; font-size: .78rem; }
+.hud-part p { margin: 3px 0 0; color: var(--muted); font-size: .71rem; line-height: 1.4; }
+.hud-part dl { margin: 5px 0 0; }
+.hud-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 6px; padding: 3px 0; font-size: .74rem; line-height: 1.38; }
+.hud-line + .hud-line { border-top: 1px solid #253034; }
+.hud-line dd { display: grid; margin: 0; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hud-delta { color: var(--muted); font-weight: 650; }
+.hud-delta.good { color: var(--green); }
+.hud-delta.bad { color: var(--pink); }
+.hud-readout .hud-reference { margin: 7px 0 0; }

@@ -7,6 +7,8 @@ const formats = Array.from({ length: 7 }, (_, maximumFractionDigits) => new Intl
 const format = (value, precision = 0) => formats[precision].format(value);
 const signed = (value, precision = 0) => (value >= 0 ? "+" : "−") + format(Math.abs(value), precision);
 const fieldContainer = byId("fields");
+const hudPanel = byId("mining-hud");
+const hudTurret = byId("hud-turret");
 const base = defaultLoadout("stock");
 const storageKey = "atelier-minier-mole-loadout-v1";
 const systemNames = { nyx: "Nyx", stanton: "Stanton", pyro: "Pyro" };
@@ -47,11 +49,11 @@ const statLabels = {
   em: ["Signature EM", "", 0, -1],
   ir: ["Signature IR", "", 0, -1],
   load: ["Consommation électrique", "unités", 1, -1],
-  beam: ["Puissance nominale du laser", "puiss.", 1],
-  beamMin: ["Puissance minimale du laser", "puiss.", 1],
+  beam: ["Puissance de fracture max.", "unités", 1],
+  beamMin: ["Puissance de fracture min.", "unités", 1],
   optimal: ["Portée optimale", "m", 0],
   distance: ["Portée maximale", "m", 0],
-  extraction: ["Débit nominal d’extraction", "unités", 0],
+  extraction: ["Puissance d’extraction", "unités", 0],
   dps: ["Dégâts bruts par seconde", "DPS", 1],
   alpha: ["Dégâts par salve", "HP", 1],
   cargo: ["Capacité de minerai", "SCU", 0]
@@ -78,12 +80,53 @@ const modifierLabels = {
   weapon_damage: "Puissance du laser ou dégâts"
 };
 const materialLabels = { Iron: "Fer", Copper: "Cuivre", Tungsten: "Tungstène", Titanium: "Titane", Aluminum: "Aluminium", "Pressurized Ice": "Glace sous pression", Silver: "Argent", Gold: "Or", Diamond: "Diamant" };
-const miningLabels = {
-  OptimalChargeRate: "Charge en zone optimale", OptimalChargeWindow: "Taille de la zone optimale",
-  AllChargeRates: "Vitesses de charge", Resistance: "Résistance de la roche",
-  Instability: "Instabilité", InertMaterials: "Matières inertes",
-  OverchargeRate: "Surcharge", ShatterDamage: "Dégâts de fragmentation",
-  DamageMultiplierChange: "Puissance du laser"
+const miningEffects = {
+  FracturePower: ["Puissance de fracture", 1],
+  Resistance: ["Résistance de la roche", -1],
+  Instability: ["Instabilité", -1],
+  OptimalChargeWindow: ["Largeur de la zone verte", 1],
+  OptimalChargeRate: ["Vitesse de progression de la fracture", 1],
+  OverchargeRate: ["Vitesse de surcharge", -1],
+  ShatterDamage: ["Dégâts de fragmentation", -1],
+  ExtractionPower: ["Puissance d’extraction", 1],
+  InertMaterials: ["Matières inertes collectées", -1]
+};
+const hudAreas = {
+  range: {
+    title: "Portée du laser",
+    description: "Sur la jauge de gauche, le repère OPTIMAL t’aide à placer la tourelle à la bonne distance de la roche.",
+    stats: ["optimal", "distance"], effects: []
+  },
+  rock: {
+    title: "Résistance et instabilité",
+    description: "Au scan, une résistance plus basse facilite la montée en charge. Une instabilité plus basse rend cette charge plus régulière.",
+    effects: ["Resistance", "Instability"]
+  },
+  window: {
+    title: "Zone verte · Fracture",
+    description: "Une zone verte plus large donne plus de marge. Une progression plus rapide réduit le temps à maintenir la charge dans le vert.",
+    effects: ["OptimalChargeWindow", "OptimalChargeRate"]
+  },
+  overcharge: {
+    title: "Zone rouge · Surcharge",
+    description: "En zone rouge, un taux de surcharge plus élevé remplit le compteur plus vite. Les dégâts de fragmentation modifient les dégâts au moment de la rupture.",
+    effects: ["OverchargeRate", "ShatterDamage"]
+  },
+  power: {
+    title: "Intensité et puissance",
+    description: "L’intensité affichée correspond au réglage de la molette. La tête, la qualité de fabrication et les modules de fracture déterminent la puissance disponible.",
+    stats: ["beam", "beamMin"], effects: ["FracturePower"]
+  },
+  extraction: {
+    title: "Après fracture · Extraction",
+    description: "En mode extraction, une puissance supérieure accélère la collecte. La filtration réduit la part de matières inertes aspirée.",
+    stats: ["extraction"], effects: ["ExtractionPower", "InertMaterials"]
+  },
+  all: {
+    title: "Effets par pièce",
+    description: "Les flèches indiquent les valeurs qui montent ou descendent. Les pourcentages indiquent le modificateur propre à chaque pièce.",
+    stats: ["beam", "beamMin", "optimal", "distance", "extraction"], effects: Object.keys(miningEffects)
+  }
 };
 
 let current;
@@ -91,6 +134,7 @@ try { current = restoreLoadout(JSON.parse(localStorage.getItem(storageKey))); }
 catch { current = defaultLoadout("balanced"); }
 let category = "systems";
 let routeMode = "map";
+let hudArea = "window";
 let craftSlot;
 
 function saveLoadout() {
@@ -132,13 +176,17 @@ function field(slot, options = {}) {
   </div>`;
 }
 
+function moduleUsage(module) {
+  return module.active ? `Actif · ${module.charges} utilisations de ${module.seconds} s` : "Passif";
+}
+
 function moduleNote(module) {
   if (!module) return "";
-  const pieces = [module.active ? `Actif · ${module.charges} utilisations de ${module.seconds} s` : "Passif"];
-  for (const [key, value] of Object.entries(module.effects)) {
-    if (miningLabels[key]) pieces.push(miningLabels[key] + " " + signed(key === "DamageMultiplierChange" ? value * 100 : value, 1) + " %");
-  }
-  return pieces.join(" · ");
+  const effects = Object.entries(miningEffects).flatMap(([key, [label]]) => {
+    const value = module.effects[key];
+    return value ? [`${label} ${signed(value, 2)} %`] : [];
+  });
+  return [moduleUsage(module), ...effects].join(" · ");
 }
 
 function editGroup(id, name, detail, contents, open) {
@@ -158,14 +206,14 @@ function renderFields() {
       + editGroup("travel-modules", "Saut et vol", "Emplacements S2 et S1", field("jump") + field("flight"), open.has("travel-modules"));
   }
   if (category === "mining") {
-    content = laserSlots.map((slot, index) => {
+    content = laserSlots.map((slot) => {
       const head = baseSlot(current, slot);
       const slots = moduleSlots(slot).slice(0, head.slots);
       const fields = field(slot, { label: "Tête de minage" }) + slots.map((id, i) =>
         field(id, { label: "Module " + (i + 1), note: moduleNote(baseSlot(current, id)) })).join("");
       return editGroup(slot, labels[slot],
         head.name.replace(" Mining Laser", "") + " · " + head.slots + " modules",
-        fields, open.has(slot) || (firstTime && index === 0));
+        fields, open.has(slot) || (firstTime && slot === hudTurret.value));
     }).join("");
   }
   if (category === "guns") content = gunSlots.map((slot) => field(slot)).join("");
@@ -219,8 +267,57 @@ function renderPaintPreview() {
   byId("paint-source").href = `https://starcitizen.tools/File:${source}`;
 }
 
+function hudLine(label, value, delta, unit, digits, preference) {
+  const tone = preference && delta ? (delta * preference > 0 ? "good" : "bad") : "";
+  const change = delta ? `<span class="hud-delta ${tone}">${delta > 0 ? "↑" : "↓"} ${signed(delta, digits)} ${unit}</span>` : "";
+  return `<div class="hud-line"><dt>${escapeText(label)}</dt><dd>${value ? `<span>${value}</span>` : ""}${change}</dd></div>`;
+}
+
+function hudModifiers(part, effects) {
+  return effects.filter((key) => part.effects[key]).map((key) => {
+    const [label, preference] = miningEffects[key];
+    return hudLine(label, "", part.effects[key], "%", 2, preference);
+  }).join("");
+}
+
+function hudPart(name, usage, rows) {
+  if (!rows) return "";
+  return `<div class="hud-part"><h5>${escapeText(name)}</h5>${usage ? `<p>${escapeText(usage)}</p>` : ""}
+    <dl>${rows}</dl></div>`;
+}
+
+function renderMiningHud() {
+  hudPanel.hidden = category !== "mining";
+  if (hudPanel.hidden) return;
+
+  for (const button of hudPanel.querySelectorAll("[data-hud-area]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.hudArea === hudArea));
+  }
+  const { title, description, stats = [], effects } = hudAreas[hudArea];
+  const slot = hudTurret.value;
+  const head = baseSlot(current, slot);
+  const headStats = loadoutStats(current, slot);
+  const stockStats = loadoutStats(base, slot);
+  const dimensions = stats.map((stat) => {
+    const [label, unit, digits] = statLabels[stat];
+    const delta = Number((headStats[stat] - stockStats[stat]).toFixed(digits));
+    return hudLine(label, cell(headStats[stat], unit, digits), delta, unit, digits, stat === "beamMin" ? 0 : 1);
+  }).join("");
+  const headCard = hudPart(`Tête · ${head.name.replace(" Mining Laser", "")}`,
+    current[slot].quality ? "Tête fabriquée" : "", dimensions + hudModifiers(head, effects));
+  const modules = moduleSlots(slot).slice(0, head.slots).map((moduleSlot, index) => {
+    const module = baseSlot(current, moduleSlot);
+    return module ? hudPart(`Module ${index + 1} · ${module.name.replace(/ Module$/, "")}`,
+      moduleUsage(module), hudModifiers(module, effects)) : "";
+  }).join("");
+  const baseline = stats.length ? '<p class="hud-reference">Écarts de la tête par rapport à l’Arbor MH2 d’origine.</p>' : "";
+  const parts = headCard + modules || '<p class="hud-reference">Valeurs de référence de la roche.</p>';
+  byId("hud-readout").innerHTML = `<h4>${title}</h4><p>${description}</p>${parts}${baseline}`;
+}
+
 function renderComparison() {
   renderPaintPreview();
+  renderMiningHud();
   const drive = loadoutStats(current, "drive");
   const shield = loadoutStats(current, "shield");
   const currentRange = fuelCapacity / drive.burn;
@@ -403,7 +500,9 @@ function showCraft(slot) {
   craft.showModal();
 }
 
-function commitLoadout(announcement, focusSelector) {
+function commitLoadout(announcement, focusSelector, updatedSlot) {
+  const turret = laserSlots.find((slot) => slot === updatedSlot || moduleSlots(slot).includes(updatedSlot));
+  if (turret) hudTurret.value = turret;
   saveLoadout();
   renderFields();
   renderComparison();
@@ -438,18 +537,33 @@ fieldContainer.addEventListener("change", (event) => {
       current[module] = { id: null, quality: null };
     }
   }
-  commitLoadout(labels[slot] + " mis à jour.", "#slot-" + slot);
+  commitLoadout(labels[slot] + " mis à jour.", "#slot-" + slot, slot);
 });
 fieldContainer.addEventListener("click", (event) => {
   const button = event.target.closest("[data-craft]");
   if (button) showCraft(button.dataset.craft);
+  const summary = event.target.closest("summary");
+  if (category === "mining" && summary && !summary.parentElement.open) {
+    hudTurret.value = summary.parentElement.id;
+    renderMiningHud();
+  }
+});
+hudPanel.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-hud-area]");
+  if (!button) return;
+  hudArea = button.dataset.hudArea;
+  renderMiningHud();
+});
+hudTurret.addEventListener("change", () => {
+  byId(hudTurret.value).open = true;
+  renderMiningHud();
 });
 
 byId("close-craft").addEventListener("click", () => craft.close());
 byId("standard-item").addEventListener("click", () => {
   current[craftSlot].quality = null;
   craft.close();
-  commitLoadout("Pièce standard montée.", `[data-craft="${craftSlot}"]`);
+  commitLoadout("Pièce standard montée.", `[data-craft="${craftSlot}"]`, craftSlot);
 });
 craftForm.addEventListener("click", (event) => {
   const button = event.target.closest("[data-quality]");
@@ -465,7 +579,7 @@ craftForm.addEventListener("submit", (event) => {
   if (!validQualities(item.recipe, qualities)) return;
   current[craftSlot].quality = qualities;
   craft.close();
-  commitLoadout(item.name + " fabriqué et monté.", `[data-craft="${craftSlot}"]`);
+  commitLoadout(item.name + " fabriqué et monté.", `[data-craft="${craftSlot}"]`, craftSlot);
 });
 
 for (const side of ["from", "to"]) {
