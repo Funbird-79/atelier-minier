@@ -1,0 +1,15 @@
+@import url("style.css?v=2");
+:root { --amber: #c0afff; }
+.hero-copy { padding-block: 32px; }
+.hero-image { left: 31%; }
+.hero-image img { object-position: center; }
+.page-links [aria-current="page"] { color: var(--amber); font-weight: 700; }
+.equipment-tabs button { font-size: .8rem; }
+.recommendation, .field label, .field select, th, td { font-size: .875rem; }
+.field small, .panel-note { font-size: .8rem; }
+.salvage-stages { display: grid; gap: 10px; margin-top: 12px; }
+.salvage-stages article { border: 1px solid var(--border); padding: 12px; border-radius: 7px; }
+.salvage-stages h4 { font-size: .95rem; margin: 0 0 5px; }
+.salvage-stages p { font-size: .875rem; line-height: 1.5; color: var(--muted); margin: 0; }
+.salvage-stages strong { color: var(--text); }
+.paint-preview img { aspect-ratio: 1500 / 643; }

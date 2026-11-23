@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Configurateur communautaire du Gatac Hyūn. Compare les composants, simule la qualité de fabrication et prépare tes trajets dans Nyx, Stanton et Pyro.">
+  <meta name="referrer" content="no-referrer">
+  <title>Atelier minier · Configurateur Gatac Hyūn</title>
+  <link rel="stylesheet" href="hyun-style.css?v=1">
+  <script src="hyun-data.js?v=1" defer></script>
+  <script src="hyun-model.js?v=1" defer></script>
+  <script src="hyun-app.js?v=1" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-inner">
+      <div class="brand"><i aria-hidden="true"></i> ATELIER MINIER</div>
+      <div class="patch"><span aria-hidden="true"></span> STAR CITIZEN <strong>4.10.3</strong></div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-image" aria-hidden="true">
+        <img alt="" src="hyun-stock.webp" fetchpriority="high">
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow">CONFIGURATEUR DE VAISSEAU</p>
+        <h1 id="title">GATAC <span>HYŪN</span></h1>
+        <p class="hero-sub">Minage S1 et salvage solo <span aria-hidden="true">/</span> Nyx · Stanton · Pyro</p>
+      </div>
+      <span class="visual-credit" aria-hidden="true">© Cloud Imperium Rights LLC / Ltd.</span>
+    </section>
+    <p class="fan-notice">Site communautaire Star Citizen, indépendant du groupe Cloud Imperium. <a href="https://robertsspaceindustries.com/">Site officiel de Star Citizen</a></p>
+
+    <nav class="page-links" aria-label="Sections du configurateur">
+      <a href="index.html">ARGO MOLE</a><a href="hyun.html" aria-current="page">Gatac Hyūn</a><a href="#equipment">Équipement et blueprints</a>
+      <a href="#route">Planificateur de trajets</a>
+    </nav>
+    <div class="workspace" id="equipment">
+      <section class="panel setup" aria-labelledby="setup-title">
+        <h2 id="setup-title">Équipement</h2>
+        <div class="presets" aria-label="Préréglages">
+          <button type="button" id="balanced" aria-pressed="true">Équilibrée</button>
+          <button type="button" id="stock" aria-pressed="false">D’origine</button>
+        </div>
+        <p class="recommendation">Le préréglage équilibré associe le <strong>Huracan</strong>, deux <strong>FR-76</strong>, le <strong>JS-400</strong> et deux <strong>Avalanche</strong>. Pour le minage, <strong>Helix I</strong> avec <strong>Focus III</strong> et <strong>Deluge</strong>.</p>
+        <div class="equipment-tabs" aria-label="Catégories">
+          <button type="button" data-category="systems" aria-pressed="true">Systèmes</button>
+          <button type="button" data-category="mining" aria-pressed="false">Minage</button>
+          <button type="button" data-category="salvage" aria-pressed="false">Salvage</button>
+          <button type="button" data-category="guns" aria-pressed="false">Armes</button>
+          <button type="button" data-category="cargo" aria-pressed="false">Soute</button>
+        </div>
+        <div class="fields" id="fields"></div>
+      </section>
+
+      <section class="results" aria-labelledby="result-title">
+        <header class="result-header">
+          <h2 id="result-title">Effets sur le Hyūn</h2>
+          <span class="mode" id="selection-name">Équilibrée</span>
+        </header>
+        <figure class="panel paint-preview" id="paint-preview" hidden>
+          <div class="credited-photo">
+            <img id="paint-image" alt="" width="1280" height="720" decoding="async">
+            <span class="visual-credit" aria-hidden="true">© Cloud Imperium Rights LLC / Ltd.</span>
+          </div>
+          <figcaption>
+            <strong id="paint-name"></strong>
+            <span class="paint-links">
+              <button class="secondary" type="button" id="paint-zoom">Agrandir</button>
+              <a id="paint-source" target="_blank" rel="noopener noreferrer">Source de l’image</a>
+            </span>
+          </figcaption>
+        </figure>
+        <section class="panel mining-hud" id="mining-hud" aria-labelledby="mining-hud-title" hidden>
+          <header class="hud-header">
+            <h3 id="mining-hud-title">Repères de minage</h3>
+            <label for="hud-turret">Bras minier
+              <select id="hud-turret">
+                <option value="laser0">Tête S1</option>
+              </select>
+            </label>
+          </header>
+          <div class="hud-layout">
+            <div>
+              <figure class="hud-figure">
+                <div class="hud-photo">
+                  <img src="hud-minage.jpg" alt="Interface de fracture avec la portée à gauche et la jauge de charge à droite" width="1536" height="1191" loading="lazy" decoding="async">
+                  <button type="button" class="hud-pin" data-hud-area="range" aria-pressed="false">Portée</button>
+                  <button type="button" class="hud-pin" data-hud-area="rock" aria-pressed="false">Roche</button>
+                  <button type="button" class="hud-pin" data-hud-area="window" aria-pressed="true">Zone verte</button>
+                  <button type="button" class="hud-pin" data-hud-area="overcharge" aria-pressed="false">Surcharge</button>
+                  <button type="button" class="hud-pin" data-hud-area="power" aria-pressed="false">Intensité</button>
+                </div>
+                <figcaption>Repères communs du mode fracture · © Cloud Imperium Rights LLC / Ltd.</figcaption>
+              </figure>
+              <div class="hud-choices">
+                <button type="button" class="secondary" data-hud-area="all" aria-pressed="false">Tous les effets</button>
+                <button type="button" class="secondary" data-hud-area="extraction" aria-pressed="false">Après fracture · Extraction</button>
+              </div>
+            </div>
+            <div class="hud-readout" id="hud-readout" aria-live="polite"></div>
+          </div>
+        </section>
+        <section class="panel mining-hud" id="salvage-guide" aria-labelledby="salvage-title" hidden>
+          <h3 id="salvage-title">Repères de salvage</h3>
+          <div class="salvage-stages">
+            <article><h4>Décapage · RMC</h4><p>Les deux Baler S2 utilisent des Abrade. La vitesse de décapage, le rayon et l’efficacité déterminent la collecte de revêtement. Portée nominale de chaque Baler <strong>150 m</strong>.</p></article>
+            <article><h4>Fragmentation</h4><p>Le mode de fracture du salvage casse l’épave en morceaux compatibles avec la désintégration. Le module de décapage agit sur la collecte du revêtement.</p></article>
+            <article><h4>Broyage · CMAT</h4><p>Le mode de désintégration récupère la structure de l’épave. Surveille le <strong>tampon commun de 40 SCU</strong> et imprime les caisses avant de le saturer.</p></article>
+          </div>
+          <p class="panel-note">Soute externe de 32 SCU · caisses jusqu’à 8 SCU · stockage de minerai de 32 SCU séparé. Les valeurs de décapage figurent dans le comparateur ci-dessous.</p>
+        </section>
+        <div class="metrics" aria-label="Indicateurs de la configuration">
+          <article class="metric speed">
+            <h3>Vitesse quantique</h3>
+            <p><strong id="metric-speed">303,5</strong> <span>Mm/s</span></p>
+            <div>Vitesse de pointe</div>
+          </article>
+          <article class="metric range">
+            <h3>Autonomie</h3>
+            <p><strong id="metric-range">1 048</strong> <span>Gm</span></p>
+            <div>Portée estimée · plein de 5,9 SCU</div>
+          </article>
+          <article class="metric resistance">
+            <h3>Résistance</h3>
+            <p><strong id="metric-shield">21 120</strong> <span>HP</span></p>
+            <div>Capacité totale du bouclier</div>
+          </article>
+        </div>
+        <div class="panel comparison">
+          <table>
+            <caption class="sr-only">Configuration choisie comparée au Hyūn d’origine</caption>
+            <thead><tr><th scope="col">Indicateur</th><th scope="col">D’origine</th><th scope="col">Ta config.</th><th scope="col">Écart</th></tr></thead>
+            <tbody id="comparison"></tbody>
+          </table>
+          <p id="comparison-note" class="panel-note" hidden></p>
+        </div>
+        <p class="sr-only" id="live-update" role="status"></p>
+      </section>
+    </div>
+
+    <section id="route" class="panel route" aria-labelledby="route-title">
+      <header class="result-header">
+        <h2 id="route-title">Planificateur de trajets</h2>
+        <div class="route-modes" aria-label="Mode du trajet">
+          <button type="button" data-route-mode="map" aria-pressed="true">Points de la carte</button>
+          <button type="button" data-route-mode="manual" aria-pressed="false">Distance manuelle</button>
+        </div>
+      </header>
+      <div class="route-layout">
+        <div class="route-controls">
+          <div id="route-map" class="route-map">
+            <fieldset>
+              <legend>Départ</legend>
+              <div class="route-fields">
+                <label class="sr-only" for="from-system">Système de départ</label>
+                <select id="from-system"><option value="nyx">Nyx</option><option value="stanton">Stanton</option><option value="pyro">Pyro</option></select>
+                <label class="sr-only" for="from-point">Point de départ</label>
+                <select id="from-point"></select>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Arrivée</legend>
+              <div class="route-fields">
+                <label class="sr-only" for="to-system">Système d’arrivée</label>
+                <select id="to-system"><option value="nyx">Nyx</option><option value="stanton">Stanton</option><option value="pyro">Pyro</option></select>
+                <label class="sr-only" for="to-point">Point d’arrivée</label>
+                <select id="to-point"></select>
+              </div>
+            </fieldset>
+            <button type="button" id="swap" class="secondary">Inverser le trajet</button>
+          </div>
+          <div id="route-manual" class="distance" hidden>
+            <label for="distance">Distance du saut aller</label>
+            <div class="distance-input">
+              <input id="distance" type="number" inputmode="decimal" min="0.000001" max="2000" step="any" value="20">
+              <span aria-hidden="true">Gm</span>
+            </div>
+            <small>1 Gm = 1 million de km.</small>
+          </div>
+          <label class="check-row"><input id="round-trip" type="checkbox"> Calculer l’aller-retour</label>
+        </div>
+        <div class="route-results">
+          <table class="route-summary">
+            <caption class="sr-only">Comparaison sur le trajet</caption>
+            <thead><tr><th scope="col">Trajet</th><th scope="col">D’origine</th><th scope="col">Ta config.</th><th scope="col">Écart</th></tr></thead>
+            <tbody id="route-comparison"></tbody>
+          </table>
+          <ol id="legs" class="legs" aria-label="Étapes à l’aller"></ol>
+          <p id="route-status" class="route-status" role="status" hidden></p>
+          <p class="panel-note">Distances à vol d’oiseau. Temps et carburant estimés pour les portions quantiques, hors traversée des portes, alignement, attente et détours du mobiGlas.</p>
+        </div>
+      </div>
+    </section>
+
+    <details class="sources">
+      <summary>Sources et calculs</summary>
+      <div class="source-content">
+        <p>Composants filtrés par les emplacements, tailles et types du Gatac Hyūn. Les fichiers du jeu peuvent répertorier une pièce compatible sans en indiquer l’obtention en jeu. Les valeurs électriques et de refroidissement sont nominales. La régénération affichée est maximale.</p>
+        <p>Chaque ingrédient suit les paliers ou segments de son blueprint. Les variations du même attribut s’ajoutent autour de la valeur de référence. Les plans dépourvus de modificateur ne donnent aucun bonus simulé. Les têtes affichent la puissance nominale après fabrication et les effets des modules séparément.</p>
+        <p>Portée calculée à partir du réservoir quantique de 5,9 SCU et de la consommation nominale par Gm. Le modèle de vol tient compte de la mise en route, de l’accélération et du freinage. Les temps et distances restent des estimations.</p>
+        <ul>
+          <li><a href="https://github.com/StarCitizenWiki/scunpacked-data/commit/f182b7f111279c9193df81927c9b4dbc8c4f3291">Composants, emplacements, recettes et coordonnées · données 4.10.3</a></li>
+          <li><a href="https://codiga.fr/outils/ressources/blueprints">Obtention des blueprints · Codiga</a></li>
+          <li><a href="https://starcitizen.tools/Guide:Quantum_travel_mechanics">Modèle de vol quantique · Star Citizen Wiki</a></li>
+          <li><a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360007611573-Mining-Basics">Interface de minage · Roberts Space Industries</a></li>
+          <li><a href="https://starcitizen.tools/Module:Entity/Facet/Mining">Interprétation des modificateurs de minage · Star Citizen Wiki</a></li>
+          <li><a href="https://starcitizen.tools/Nyx_system">Portes de Nyx · Star Citizen Wiki</a></li>
+          <li><a href="https://uexcorp.space/vehicles/components/">Boutiques signalées par les joueurs · UEX</a></li>
+          <li><a href="https://robertsspaceindustries.com/en/comm-link/transmission/21349-Gatac-Hy-n">Hyūn, activités et peintures · Roberts Space Industries</a></li>
+          <li><a href="https://robertsspaceindustries.com/en/comm-link/transmission/21349-Gatac-Hy-n">Visuels du Hyūn · Cloud Imperium Games</a></li>
+        </ul>
+      </div>
+    </details>
+    <footer class="fan-footer">
+      <p>Star Citizen® et les visuels du jeu appartiennent à leurs titulaires respectifs. Chaque aperçu de peinture indique la source de son image.</p>
+      <a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360006895793-Star-Citizen-Fankit-and-Fandom-FAQ">Crédits communautaires</a>
+    </footer>
+    <dialog class="paint-dialog" id="paint-dialog" aria-labelledby="paint-dialog-title">
+      <div class="result-header">
+        <h2 id="paint-dialog-title"></h2>
+        <form method="dialog"><button class="secondary" type="submit">Fermer</button></form>
+      </div>
+      <div class="credited-photo">
+        <img id="paint-full-image" alt="" width="1280" height="720">
+        <span class="visual-credit" aria-hidden="true">© Cloud Imperium Rights LLC / Ltd.</span>
+      </div>
+    </dialog>
+    <dialog id="craft" aria-labelledby="craft-title">
+      <form id="craft-form">
+        <header class="result-header">
+          <div><p class="eyebrow">BLUEPRINT</p><h2 id="craft-title"></h2></div>
+          <button type="button" class="secondary" id="close-craft" aria-label="Fermer le blueprint">✕</button>
+        </header>
+        <p class="panel-note" id="craft-note"></p>
+        <a id="craft-source" target="_blank" rel="noopener noreferrer">Fiche du blueprint</a>
+        <div class="craft-presets" aria-label="Qualité de tous les matériaux">
+          <button type="button" class="secondary" data-quality="500">Tout à 500</button>
+          <button type="button" class="secondary" data-quality="800">Tout à 800</button>
+          <button type="button" class="secondary" data-quality="1000">Tout à 1 000</button>
+        </div>
+        <div id="ingredients"></div>
+        <div id="craft-results"></div>
+        <div class="craft-actions">
+          <button type="button" class="secondary" id="standard-item">Remonter la version standard</button>
+          <button type="submit" class="primary" id="equip-crafted">Monter la pièce fabriquée</button>
+        </div>
+      </form>
+    </dialog>
+    <noscript><p>Active JavaScript pour utiliser le comparateur.</p></noscript>
+  </main>
+</body>
+</html>
