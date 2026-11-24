@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Configure les vaisseaux de minage et de salvage de Star Citizen. Compositions d’origine, composants compatibles, pods et blueprints.">
+  <title>Atelier minier · Flotte de minage et salvage</title>
+  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="fleet-style.css?v=1">
+  <script src="fleet-data.js?v=1" defer></script>
+  <script src="fleet-model.js?v=1" defer></script>
+  <script src="fleet-app.js?v=1" defer></script>
+</head>
+<body>
+  <header class="top"><div class="wrap top-inner"><div class="brand"><i aria-hidden="true"></i> ATELIER MINIER</div><div class="patch">STAR CITIZEN <strong>4.10.3</strong></div></div></header>
+  <main class="wrap">
+    <section class="fleet-picker panel" aria-labelledby="fleet-title">
+      <div><p class="eyebrow">MINAGE &amp; SALVAGE</p><h2 id="fleet-title">Choisis ton vaisseau</h2></div>
+      <div class="field"><label for="ship-picker">Vaisseau</label><select id="ship-picker"><optgroup label="Minage"><option value="prospector">MISC Prospector</option><option value="golem">Drake Golem</option><option value="mole">ARGO MOLE</option></optgroup><optgroup label="Minage et salvage"><option value="hyun">Gatac Hyūn</option></optgroup><optgroup label="Salvage"><option value="vulture">Drake Vulture</option><option value="fortune">MISC Fortune</option><option value="salvation">RSI Salvation</option><option value="moth">ARGO MOTH</option><option value="reclaimer">Aegis Reclaimer</option></optgroup></select></div>
+    </section>
+    <section class="hero fleet-hero" aria-labelledby="ship-title">
+      <div class="hero-image"><img id="ship-image" src="fleet-prospector.webp" alt="MISC Prospector en opération de minage" width="1280" height="768"><span class="visual-credit">© Cloud Imperium Rights LLC / Ltd.</span></div>
+      <div class="hero-copy"><p class="eyebrow" id="ship-role">MINAGE SOLO</p><h1 id="ship-title">MISC <span>Prospector</span></h1><p class="hero-sub" id="ship-summary">Nyx · Stanton · Pyro</p></div>
+    </section>
+    <nav class="page-links" aria-label="Navigation"><a href="index.html">ARGO MOLE</a><a href="hyun.html">Gatac Hyūn</a><a href="flotte.html" aria-current="page">Tous les vaisseaux</a><a href="#route">Trajets</a><a id="image-source" href="https://robertsspaceindustries.com/en/comm-link/transmission/18553-Alpha-317-Has-Launched" target="_blank" rel="noopener noreferrer">Source du visuel</a></nav>
+    <p class="fan-notice">Site communautaire indépendant du groupe Cloud Imperium. <a href="https://robertsspaceindustries.com/">Site officiel de Star Citizen</a></p>
+    <div class="workspace">
+      <section class="panel setup" aria-labelledby="setup-title">
+        <h2 id="setup-title">Équipement</h2>
+        <div class="presets" aria-label="Préréglages"><button type="button" id="balanced">Équilibrée</button><button type="button" id="stock">D’origine</button></div>
+        <p class="recommendation" id="recommendation"></p>
+        <div class="equipment-tabs" aria-label="Catégories">
+          <button type="button" data-category="composition" aria-pressed="true">Composition</button>
+          <button type="button" data-category="systems" aria-pressed="false">Systèmes</button>
+          <button type="button" data-category="mining" aria-pressed="false">Minage</button>
+          <button type="button" data-category="salvage" aria-pressed="false">Salvage</button>
+          <button type="button" data-category="guns" aria-pressed="false">Armes</button>
+          <button type="button" data-category="cargo" aria-pressed="false">Soute</button>
+        </div>
+        <div class="fields" id="fields"></div>
+        <p class="save-state" id="save-state" role="status" aria-live="polite"></p>
+      </section>
+      <section class="fleet-results" aria-labelledby="result-title">
+        <div class="result-header"><h2 id="result-title">Effets sur le vaisseau</h2><span class="mode" id="profile-name"></span></div>
+        <div class="metrics" aria-label="Indicateurs de la configuration">
+          <article class="metric"><h3>Vitesse quantique</h3><p><strong id="metric-speed">—</strong><span>Mm/s</span></p><div>Vitesse de pointe</div></article>
+          <article class="metric range"><h3>Autonomie</h3><p><strong id="metric-range">—</strong><span>Gm</span></p><div id="fuel-label">Sur un plein</div></article>
+          <article class="metric resistance"><h3>Résistance</h3><p><strong id="metric-shield">—</strong><span>HP</span></p><div>Capacité totale des boucliers</div></article>
+        </div>
+        <section class="panel industrial-summary" id="capacity-summary" aria-label="Capacités industrielles"></section>
+        <section class="panel mining-hud" id="mining-hud" hidden aria-labelledby="hud-title">
+          <h3 id="hud-title">Repères du minage</h3>
+          <figure class="fleet-hud-photo"><img src="hud-minage.jpg" alt="HUD de minage : portée à gauche, zone verte et surcharge à droite, intensité du laser en bas" loading="lazy"><figcaption>Portée à gauche · charge à droite · intensité en bas. Les effets ci-dessous suivent la tête et les modules montés.</figcaption></figure>
+          <label class="check-row"><input type="checkbox" id="active-modules">Inclure les modules actifs pendant leur durée d’action</label>
+          <div id="mining-effects"></div>
+        </section>
+        <section class="panel salvage-compare" id="salvage-compare" hidden aria-labelledby="scraper-title">
+          <h3 id="scraper-title">Comparer les modules de décapage</h3>
+          <div class="field"><label for="scraper-comparison">Module à comparer</label><select id="scraper-comparison"></select></div>
+          <div id="scraper-stats"></div>
+          <p class="panel-note">Comparaison du module seul. Un emplacement indiqué « intégré » dans la composition reste verrouillé. Le rendement réel dépend aussi de la tête, du vaisseau et de l’alignement sur la coque.</p>
+        </section>
+        <div class="panel comparison"><table><caption class="sr-only" id="comparison-caption">Configuration comparée au montage d’origine</caption><thead><tr><th id="comparison-label" scope="col">Élément</th><th scope="col">D’origine</th><th scope="col">Ta config.</th><th scope="col" id="delta-header">Écart</th></tr></thead><tbody id="comparison"></tbody></table><p class="panel-note" id="comparison-note"></p></div>
+        <p class="panel-note" id="ship-notes"></p>
+      </section>
+    </div>
+    <section class="panel route" id="route" aria-labelledby="route-title">
+      <div class="result-header"><h2 id="route-title">Trajets · Nyx, Stanton et Pyro</h2></div>
+      <div class="route-layout"><div class="route-controls">
+        <div class="route-map" id="route-map"><fieldset><legend>Départ</legend><div class="route-fields"><select id="from-system" aria-label="Système de départ"><option value="nyx">Nyx</option><option value="stanton">Stanton</option><option value="pyro">Pyro</option></select><select id="from-point" aria-label="Point de départ"></select></div></fieldset><fieldset><legend>Arrivée</legend><div class="route-fields"><select id="to-system" aria-label="Système d’arrivée"><option value="nyx">Nyx</option><option value="stanton">Stanton</option><option value="pyro">Pyro</option></select><select id="to-point" aria-label="Point d’arrivée"></select></div></fieldset><button type="button" class="secondary" id="swap">Inverser le trajet</button></div>
+        <label class="check-row"><input type="checkbox" id="round-trip">Calculer l’aller-retour</label>
+      </div><div class="route-results"><table><caption class="sr-only">Comparaison du trajet</caption><thead><tr><th scope="col">Trajet</th><th scope="col">D’origine</th><th scope="col">Ta config.</th><th scope="col">Écart</th></tr></thead><tbody id="route-comparison"></tbody></table><ol class="legs" id="legs"></ol><p class="panel-note" id="route-status"></p></div></div>
+      <p class="panel-note">Distances à vol d’oiseau. Estimations hors alignement, portes de saut, attentes et détours. Les réservoirs et la vitesse SCM/NAV restent ceux du vaisseau.</p>
+    </section>
+    <details class="sources"><summary>Sources et calculs</summary><div class="source-content"><p>Extraction des fichiers de Star Citizen 4.10.3, arrêtée à la révision indiquée. Les choix suivent la taille, les types et les attaches du montage d’origine. Les composants intégrés et les éléments S4 dédiés sont conservés.</p><p>La qualité des matériaux agit uniquement selon les courbes du blueprint répertorié. Une qualité 800 ne produit pas de bonus uniforme et n’augmente pas la capacité d’un pod dont la recette ne comporte aucun bonus de volume. Les prix et les lieux d’achat ne sont pas estimés.</p><p>La résistance affichée représente la capacité des boucliers, et l’intégrité d’une pièce ses points de vie. Elles ne prédisent pas à elles seules la survie du vaisseau. Le refroidissement et la puissance sont des capacités nominales, pas un bilan de consommation en situation.</p><ul><li><a id="ship-source" href="https://github.com/StarCitizenWiki/scunpacked-data/tree/f182b7f111279c9193df81927c9b4dbc8c4f3291">Montage d’origine et composants</a></li><li><a href="https://github.com/StarCitizenWiki/scunpacked-data/blob/f182b7f111279c9193df81927c9b4dbc8c4f3291/blueprints.json">Recettes et courbes de qualité</a></li><li><a href="https://robertsspaceindustries.com/en/ship-matrix">Fiches constructeur</a></li></ul></div></details>
+    <footer class="fan-footer"><p>Star Citizen® et les visuels du jeu appartiennent à leurs titulaires respectifs. Photographies © Cloud Imperium Rights LLC / Ltd. Les sources sont liées sous le visuel de chaque vaisseau.</p><a href="https://support.robertsspaceindustries.com/hc/en-us/articles/360006895793-Star-Citizen-Fankit-and-Fandom-FAQ">Crédits communautaires</a></footer>
+    <noscript><p>Active JavaScript pour sélectionner le vaisseau et comparer les composants.</p></noscript>
+  </main>
+  <dialog id="craft-dialog" aria-labelledby="craft-title"><form id="craft-form"><div class="result-header"><div><p class="eyebrow">BLUEPRINT</p><h2 id="craft-title"></h2></div><button class="secondary" type="button" id="close-craft" aria-label="Fermer le blueprint">Fermer</button></div><p class="panel-note" id="craft-note"></p><a id="craft-source" target="_blank" rel="noopener noreferrer">Fiche du blueprint</a><div class="craft-presets" aria-label="Qualité de tous les matériaux"><button class="secondary" type="button" data-quality="500">Tout à 500</button><button class="secondary" type="button" data-quality="800">Tout à 800</button><button class="secondary" type="button" data-quality="1000">Tout à 1 000</button></div><div id="recipe-fields"></div><div class="craft-preview" id="craft-preview"></div><p class="panel-note" id="craft-quality-note"></p><div class="craft-actions"><button type="button" class="secondary" id="standard-item">Revenir à la pièce standard</button><button type="submit" class="primary" id="equip-crafted">Monter la pièce fabriquée</button></div></form></dialog>
+</body>
+</html>
