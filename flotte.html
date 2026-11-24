@@ -8,9 +8,11 @@
   <title>Atelier minier · Flotte de minage et salvage</title>
   <link rel="stylesheet" href="style.css?v=2">
   <link rel="stylesheet" href="fleet-style.css?v=1">
+  <link rel="stylesheet" href="configurations.css?v=1">
+  <script src="configurations.js?v=1" defer></script>
   <script src="fleet-data.js?v=1" defer></script>
   <script src="fleet-model.js?v=1" defer></script>
-  <script src="fleet-app.js?v=1" defer></script>
+  <script src="fleet-app.js?v=2" defer></script>
 </head>
 <body>
   <header class="top"><div class="wrap top-inner"><div class="brand"><i aria-hidden="true"></i> ATELIER MINIER</div><div class="patch">STAR CITIZEN <strong>4.10.3</strong></div></div></header>
@@ -30,6 +32,7 @@
         <h2 id="setup-title">Équipement</h2>
         <div class="presets" aria-label="Préréglages"><button type="button" id="balanced">Équilibrée</button><button type="button" id="stock">D’origine</button></div>
         <p class="recommendation" id="recommendation"></p>
+        <div id="configurations"></div>
         <div class="equipment-tabs" aria-label="Catégories">
           <button type="button" data-category="composition" aria-pressed="true">Composition</button>
           <button type="button" data-category="systems" aria-pressed="false">Systèmes</button>

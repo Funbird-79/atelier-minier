@@ -657,3 +657,14 @@ document.querySelector(".hero-image img").addEventListener("error", (event) => {
 renderFields();
 renderComparison();
 renderRoute();
+
+SavedConfigurations.mount({
+  container: byId("configurations"),
+  getShip: () => ({ id: "hyun", name: "Gatac Hyūn" }),
+  getState: () => current,
+  normalize: restoreLoadout,
+  apply: (loadout) => {
+    current = restoreLoadout(loadout);
+    commitLoadout("Configuration enregistrée chargée.");
+  }
+});

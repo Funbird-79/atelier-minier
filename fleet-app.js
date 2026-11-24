@@ -36,6 +36,7 @@ const storageKey = id => "atelier-minier-flotte-" + id + "-v1";
 let ship, current, base, craftSlot;
 let category = "composition";
 let profileHint = "balanced";
+let configurationSaves;
 let savedOk = true;
 
 function partName(part) {
@@ -47,7 +48,7 @@ const slotEnabled = slot => slot.group !== "module" || slot.moduleIndex < (F.ite
 function save() {
   try { localStorage.setItem(storageKey(ship.id), JSON.stringify(current)); savedOk = true; }
   catch { savedOk = false; }
-  el("save-state").textContent = savedOk ? "Configuration enregistrée sur cet appareil pour le " + ship.name + "." : "Sauvegarde locale indisponible. La configuration reste utilisable dans cette page.";
+  el("save-state").textContent = savedOk ? "Dernier montage conservé automatiquement sur cet appareil." : "Sauvegarde locale indisponible. La configuration reste utilisable dans cette page.";
 }
 function selectShip(id) {
   if (id === "mole" || id === "hyun") { location.href = id === "mole" ? "index.html" : "hyun.html"; return; }
@@ -72,7 +73,7 @@ function selectShip(id) {
   el("ship-source").href = ship.source;
   el("result-title").textContent = "Effets sur le " + ship.name;
   el("ship-notes").textContent = ship.notes.join(" ");
-  el("save-state").textContent = "Une configuration séparée est conservée pour chaque vaisseau sur cet appareil.";
+  el("save-state").textContent = "Le dernier montage est repris automatiquement. Utilise « Mes configurations » pour garder plusieurs profils.";
   const changed = ship.slots.filter(slot => ship.balanced[slot.id] !== slot.stock).map(slot => FLEET_DATA.parts[ship.balanced[slot.id]]?.name).filter(Boolean);
   el("recommendation").textContent = changed.length
     ? "Préréglage équilibré : " + [...new Set(changed)].join(", ") + ". Il conserve les pods et les équipements de salvage d’origine."
@@ -82,6 +83,7 @@ function selectShip(id) {
       && !(button.dataset.category === "cargo" && ship.cargo > 0);
   }
   render();
+  configurationSaves?.syncShip();
 }
 
 function field(slot) {
@@ -319,6 +321,13 @@ el("craft-form").addEventListener("submit", event => {
   event.preventDefault(); const quality = craftValues(); const part = F.item(current, craftSlot.id);
   if (!craftSlot.editable || !F.validQuality(part.recipe, quality)) return;
   current[craftSlot.id].quality = quality; el("craft-dialog").close(); save(); render();
+});
+configurationSaves = SavedConfigurations.mount({
+  container: el("configurations"),
+  getShip: () => ship && ({ id: ship.id, name: ship.name }),
+  getState: () => current,
+  normalize: loadout => F.restore(ship, loadout),
+  apply: loadout => { current = F.restore(ship, loadout); save(); render(); }
 });
 fillPoints("from"); fillPoints("to");
 selectShip(new URL(location.href).searchParams.get("vaisseau"));
