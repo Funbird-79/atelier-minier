@@ -156,6 +156,7 @@ function profileName() {
 function partName(part) {
   if (!part) return "Aucun";
   const type = classLabels[part.kind];
+  if (Number.isFinite(part.stats.cargo)) return part.name + " · " + format(part.stats.cargo) + " SCU";
   return part.name + (type ? " · " + type + " " + part.grade : "");
 }
 
@@ -229,8 +230,10 @@ function renderFields() {
       + '<p class="panel-note">Les sous-emplacements des Baler sont verrouillés dans les données 4.10.3. Le blueprint Abrade permet de comparer les qualités de fabrication.</p>';
   }
   if (category === "cargo") {
-    content = field("paint") + editGroup("ore-pods", "Pods de minerai", "4 × 8 SCU",
-      podSlots.map((slot) => field(slot)).join(""), open.has("ore-pods"));
+    const capacity = format(sum(current, podSlots, "cargo"));
+    content = field("paint") + editGroup("ore-pods", "Pods de minerai", `${capacity} SCU au total · 4 emplacements`,
+      podSlots.map((slot) => field(slot)).join(""), open.has("ore-pods") || firstTime)
+      + '<p class="panel-note">Pods interchangeables · Hyūn ou Prospector 8 SCU, MOLE 12 SCU, MISC Enhanced 15 SCU. Quatre pods de 15 SCU portent le stockage de minerai à 60 SCU.</p>';
   }
   fieldContainer.dataset.view = category;
   fieldContainer.innerHTML = content;
@@ -399,7 +402,7 @@ function renderComparison() {
   if (category === "cargo") {
     rows = [["Capacité totale de minerai", sum(base, podSlots, "cargo"), sum(current, podSlots, "cargo"), "SCU", 0, 1]];
     for (const slot of podSlots) rows.push(comparisonRow(slot, "cargo", labels[slot]));
-    note = "Capacité des quatre pods d’origine. Soute cargo séparée de 32 SCU et tampon de salvage de 40 SCU.";
+    note = "Capacité des quatre pods montés. D’origine 32 SCU, avec quatre pods de MOLE 48 SCU, avec quatre MISC Enhanced 60 SCU. Le blueprint du pod renforcé demande du fer de qualité 800 minimum. Soute cargo séparée de 32 SCU et tampon de salvage de 40 SCU.";
   }
   compareRows(byId("comparison"), rows);
   byId("comparison-note").textContent = note;
