@@ -97,6 +97,9 @@ function field(slot) {
   if (slot.group === "module" && selected) note = (selected.active ? `Actif · ${selected.charges} utilisations de ${selected.seconds} s. ` : "Passif. ")
     + Object.entries(effectLabels).filter(([key]) => selected.effects[key]).map(([key, [label]]) => label + " " + signed(selected.effects[key], 1) + " %").join(" · ");
   if (slot.group === "pod" && selected?.recipe?.ingredients.some(ingredient => ingredient.min >= 800)) note = "Blueprint : qualité minimale 800 pour le fer. La qualité ne multiplie pas la capacité du pod.";
+  if (slot.group === "scraper" && slot.editable) note = selected.salvageMode === "tractor"
+    ? "Rayon tracteur pour manipuler les épaves · aucun décapage RMC."
+    : "Module de décapage interchangeable · blueprint et qualité pris en compte.";
   return `<div class="field"><label for="slot-${slot.id}">${escapeHtml(slot.label)} <span>S${slot.size}${fixed ? " · intégré" : ""}</span></label><div class="field-control"><select id="slot-${slot.id}" data-slot="${slot.id}" ${fixed || slot.choices.length === 1 && slot.stock !== null ? "disabled" : ""}>${options}</select>${button}</div>${note ? `<small>${escapeHtml(note)}</small>` : ""}</div>`;
 }
 function renderFields() {
@@ -105,7 +108,7 @@ function renderFields() {
   const changed = container.dataset.view !== ship.id + ":" + category;
   container.dataset.view = ship.id + ":" + category;
   if (category === "composition") {
-    container.innerHTML = `<div class="composition-intro"><p>Le tableau compare toute la composition d’origine à ta configuration actuelle.</p><ul><li>Systèmes : quantique, boucliers, centrales, refroidissement et radar.</li><li>${ship.ore ? "Minage : tête, modules et pods compatibles." : "Salvage : têtes, modules intégrés et capacités de traitement."}</li><li>Armes : canons, missiles et contre-mesures du vaisseau.</li><li>Blueprint : recettes, qualité par matériau et gains calculés.</li></ul><p>Choisis une catégorie pour modifier les composants. Les pièces intégrées restent visibles.</p></div>`;
+    container.innerHTML = `<div class="composition-intro"><p>Le tableau compare toute la composition d’origine à ta configuration actuelle.</p><ul><li>Systèmes : quantique, boucliers, centrales, refroidissement et radar.</li><li>${ship.ore ? "Minage : tête, modules et pods compatibles." : "Salvage : têtes, modules compatibles et capacités de traitement."}</li><li>Armes : canons, missiles et contre-mesures du vaisseau.</li><li>Blueprint : recettes, qualité par matériau et gains calculés.</li></ul><p>Choisis une catégorie pour modifier les composants. Les pièces intégrées restent visibles.</p></div>`;
     return;
   }
   const slots = ship.slots.filter(slot => slot.category === category && slotEnabled(slot));
@@ -118,9 +121,10 @@ function renderFields() {
   }).join("");
 }
 function tableRow(label, first, second, unit = "", digits = 0, direction = 1) {
-  const difference = second - first;
-  const tone = Math.abs(difference) < 1e-9 ? "" : difference * direction > 0 ? "good" : "bad";
-  return `<tr><th scope="row">${escapeHtml(label)}</th><td>${fmt(first, digits)} <span class="unit">${escapeHtml(unit)}</span></td><td>${fmt(second, digits)} <span class="unit">${escapeHtml(unit)}</span></td><td class="${tone}">${Math.abs(difference) < 1e-9 ? "—" : signed(difference, digits)}</td></tr>`;
+  const comparable = Number.isFinite(first) && Number.isFinite(second);
+  const difference = comparable ? second - first : 0;
+  const tone = !comparable || Math.abs(difference) < 1e-9 ? "" : difference * direction > 0 ? "good" : "bad";
+  return `<tr><th scope="row">${escapeHtml(label)}</th><td>${fmt(first, digits)} <span class="unit">${Number.isFinite(first) ? escapeHtml(unit) : ""}</span></td><td>${fmt(second, digits)} <span class="unit">${Number.isFinite(second) ? escapeHtml(unit) : ""}</span></td><td class="${tone}">${!comparable || Math.abs(difference) < 1e-9 ? "—" : signed(difference, digits)}</td></tr>`;
 }
 function statRow(slot, key) {
   const [label, unit, digits, direction] = statLabels[key];
@@ -176,10 +180,16 @@ function renderComparison() {
   }
   if (category === "salvage") {
     for (const slot of F.slotsOf(ship, "scraper")) {
-      if (!F.item(current, slot.id)?.stats.scrapeSpeed) continue;
-      for (const key of ["scrapeSpeed", "scrapeRadius", "scrapeEfficiency"]) rows.push(statRow(slot, key));
+      const first = F.stats(base, slot.id), second = F.stats(current, slot.id);
+      if (!Number.isFinite(first.scrapeSpeed) && !Number.isFinite(second.scrapeSpeed)) continue;
+      for (const key of ["scrapeSpeed", "scrapeRadius", "scrapeEfficiency"]) {
+        const [label, unit, digits, direction] = statLabels[key];
+        rows.push(tableRow(slot.label + " · " + label.toLowerCase(), first[key], second[key], unit, digits, direction));
+      }
     }
-    note = "Coefficients des modules de décapage d’origine. Les têtes, modules intégrés et rayons tracteurs figurent dans la composition. Les bras ne sont pas additionnés en un débit universel de SCU/min.";
+    const tractors = F.slotsOf(ship, "scraper").filter(slot => F.item(current, slot.id)?.salvageMode === "tractor").map(slot => slot.label);
+    note = "Modules sélectionnés comparés au montage d’origine, qualité de fabrication comprise. Vitesse, rayon et efficacité s’interprètent ensemble. Le rendement réel dépend aussi du vaisseau et de l’alignement sur la coque ; ces coefficients ne sont pas un débit en SCU/min."
+      + (tractors.length ? " Rayon tracteur sans décapage : " + tractors.join(", ") + "." : "");
   }
   if (category === "guns") {
     rows.push(tableRow("DPS brut total des canons", F.sum(ship, base, "gun", "dps"), F.sum(ship, current, "gun", "dps"), "DPS", 1));

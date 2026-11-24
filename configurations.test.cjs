@@ -36,6 +36,13 @@ for (const context of contexts) {
     : context.parts.drive.find(part=>part.id===snapshot[drive].id);
   if (drivePart.recipe) snapshot[drive].quality = drivePart.recipe.ingredients.map(ingredient=>Math.max(800,ingredient.min));
   if (context.parts?.paint?.length) snapshot.paint.id = context.parts.paint[0].id;
+  const scraper = context.ship?.slots.find(slot=>slot.group==='scraper' && slot.editable)?.id
+    ?? (context.parts?.scraper ? 'scraper0' : null);
+  if (scraper) {
+    const id = 'salvage_modifier_scraper_large';
+    const part = context.data ? context.data.parts[id] : context.parts.scraper.find(part=>part.id===id);
+    snapshot[scraper] = {id, quality:part.recipe.ingredients.map(ingredient=>Math.max(800,ingredient.min))};
+  }
   const valid = context.normalize(snapshot);
   equal(valid, snapshot, context.id + ': fixture includes valid crafting quality and paint');
   const make = () => context.store.createStore(storage, context, context.normalize);

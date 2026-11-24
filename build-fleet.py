@@ -2,6 +2,7 @@
 
 Usage: python build-fleet.py --source-dir ../fleet-reference
 Missing source files are downloaded from the pinned public data repository.
+Add --update-hyun-salvage to refresh the shared Baler module choices on the Hyūn.
 """
 import argparse
 import json
@@ -14,7 +15,9 @@ REVISION = 'f182b7f111279c9193df81927c9b4dbc8c4f3291'
 RAW = f'https://raw.githubusercontent.com/StarCitizenWiki/scunpacked-data/{REVISION}/'
 parser = argparse.ArgumentParser()
 parser.add_argument('--source-dir', type=Path, default=ROOT.parent / 'fleet-reference')
-CACHE = parser.parse_args().source_dir
+parser.add_argument('--update-hyun-salvage', action='store_true')
+args = parser.parse_args()
+CACHE = args.source_dir
 CACHE.mkdir(parents=True, exist_ok=True)
 
 
@@ -35,6 +38,12 @@ recipes = {b['Output']['Class'].lower(): b for b in blueprints
            if b['Kind'] == 'creation' and isinstance(b.get('Output'), dict)}
 old = json.loads((ROOT / 'catalog.js').read_text().removeprefix('const ARGO_DATA = ').strip().removesuffix(';'))
 parts = {}
+# CIG's MOTH Q&A confirms these interchangeable Baler sub-items despite the
+# extraction's Uneditable flags. Salvation attachments are explicitly bespoke.
+# https://robertsspaceindustries.com/en/comm-link/engineering/21011-Q-A-Argo-MOTH
+# https://robertsspaceindustries.com/en/comm-link/engineering/20881-Q-A-RSI-Salvation
+BALER_MODULES = ['salvage_modifier_scraper_medium', 'salvage_modifier_scraper_small',
+                 'salvage_modifier_scraper_large', 'salvage_modifier_tractor_small']
 
 
 def recipe_for(identifier):
@@ -115,10 +124,13 @@ def part(identifier):
     if item['type'] == 'Container':
         stats['cargo'] = original.get('ResourceContainer', {}).get('Capacity', {}).get('SCU', 0)
     if 'SalvageModifier' in original:
-        salvage = original['SalvageModifier']
-        stats.update(scrapeSpeed=salvage.get('SalvageSpeedMultiplier', 0),
-                     scrapeRadius=salvage.get('RadiusMultiplier', 0),
-                     scrapeEfficiency=100 * salvage.get('ExtractionEfficiency', 0))
+        tractor = original.get('Type', '').endswith('TractorBeam')
+        result['salvageMode'] = 'tractor' if tractor else 'scraper'
+        if not tractor:
+            salvage = original['SalvageModifier']
+            stats.update(scrapeSpeed=salvage.get('SalvageSpeedMultiplier', 0),
+                         scrapeRadius=salvage.get('RadiusMultiplier', 0),
+                         scrapeEfficiency=100 * salvage.get('ExtractionEfficiency', 0))
     recipe = recipe_for(identifier)
     if recipe:
         result['recipe'] = recipe
@@ -163,6 +175,13 @@ def walk(nodes):
 
 def choices(port, kind, slug):
     stock = port['ClassName'].lower()
+    if kind == 'SalvageModifier':
+        if slug == 'salvation':
+            return [stock]
+        compatible = [cid for cid in BALER_MODULES
+                      if port['MinSize'] <= index[cid]['size'] <= port['MaxSize']
+                      and 'salvageMount' in index[cid]['stdItem'].get('Tags', [])]
+        return sorted(set([stock] + compatible), key=lambda cid: index[cid]['name'])
     if not port.get('Editable') or kind in ['FlightController', 'MissileLauncher', 'WeaponDefensive', 'SalvageHead', 'TractorBeam']:
         return [stock]
     # Capital machinery is bespoke. Retain the Reclaimer's own S4 parts and their recipes.
@@ -227,9 +246,11 @@ for slug, class_name, name, role, image_source in SPECS:
             part(identifier)
         slot = {'id': key, 'group': group, 'category': category, 'label': label + ' ' + str(number + 1),
                 'stock': cid, 'choices': ids, 'size': index[cid]['size'],
-                'editable': bool(port.get('Editable')), 'path': '/'.join(port.get('Path', []))}
+                'editable': bool(port.get('Editable')) or kind == 'SalvageModifier' and slug != 'salvation',
+                'path': '/'.join(port.get('Path', []))}
         if group == 'scraper':
             slot['parent'] = paths.get(port.get('ParentPortId'))
+            slot['label'] += ' · tête ' + str(int(slot['parent'].removeprefix('salvage')) + 1)
         slots.append(slot)
         paths[port.get('PortId')] = key
         if group == 'laser':
@@ -290,7 +311,10 @@ for slug, class_name, name, role, image_source in SPECS:
         notes = ['Centrale S4 intégrée. Bouclier RS-Barrier et refroidisseur Algid dédiés : leur blueprint peut être comparé sans proposer de pièces d’autres capitaux.',
                  'Les sept PDC sont intégrés. Les armes S3 des tourelles et les deux canons S5 sont distingués.']
     if buffer:
-        notes += ['La soute cargo et le tampon interne de salvage sont séparés. Les modules marqués intégrés restent ceux du montage d’origine ; leur blueprint est consultable pour comparaison.']
+        notes += ['La soute cargo et le tampon interne de salvage sont séparés.']
+        notes += ['Le Salvation conserve ses têtes et modules dédiés, non interchangeables selon la FAQ CIG. Leur blueprint reste consultable pour comparaison.'
+                  if slug == 'salvation' else
+                  'Les modules des Baler sont interchangeables : Abrade, Cinch, Trawler ou ReadyGrip. Le ReadyGrip manipule les épaves sans décaper leur revêtement.']
     fleet.append({'id': slug, 'className': class_name, 'name': name, 'role': role, 'crew': source.get('Crew'),
                   'fuel': source['QuantumTravel']['FuelCapacity'] / 1000, 'cargo': source.get('Cargo', 0),
                   'ore': source.get('OreCapacity', 0), 'buffer': buffer, 'structural': structural,
@@ -301,6 +325,11 @@ for slug, class_name, name, role, image_source in SPECS:
 data = {'patch': '4.10.3', 'revision': REVISION, 'ships': fleet, 'parts': parts, 'scrapers': scrapers,
         'points': old['points'], 'gates': old['gates']}
 (ROOT / 'fleet-data.js').write_text('const FLEET_DATA = ' + json.dumps(data, ensure_ascii=False, separators=(',', ':')) + ';\n')
+if args.update_hyun_salvage:
+    hyun_path = ROOT / 'hyun-data.js'
+    hyun = json.loads(hyun_path.read_text().removeprefix('const ARGO_DATA = ').strip().removesuffix(';'))
+    hyun['parts']['scraper'] = [parts[cid] for cid in BALER_MODULES]
+    hyun_path.write_text('const ARGO_DATA = ' + json.dumps(hyun, ensure_ascii=False, separators=(',', ':')) + ';\n')
 for ship in fleet:
     print(ship['name'], len(ship['slots']), 'emplacements', 'soute', ship['cargo'], 'tampon', ship['buffer'])
 print(len(parts), 'références,', sum(bool(p.get('recipe')) for p in parts.values()), 'blueprints')
