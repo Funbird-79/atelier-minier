@@ -27,7 +27,8 @@ Object.assign(labels, {
   shield0: "Bouclier gauche", shield1: "Bouclier droit", cooler0: "Refroidisseur 1", cooler1: "Refroidisseur 2",
   laser0: "Bras de minage", gun0: "Canon bas gauche", gun1: "Canon bas droit", gun2: "Canon gauche", gun3: "Canon droit",
   lifesupport: "Support de vie", salvage0: "Tête de salvage gauche", salvage1: "Tête de salvage droite",
-  scraper0: "Module de salvage gauche", scraper1: "Module de salvage droit"
+  scraper0: "Module 1 · bras gauche", scraper2: "Module 2 · bras gauche",
+  scraper1: "Module 1 · bras droit", scraper3: "Module 2 · bras droit"
 });
 for (const [index, key] of podSlots.entries()) labels[key] = "Pod " + (index + 1);
 for (const slot of laserSlots) {
@@ -226,13 +227,14 @@ function renderFields() {
   if (category === "guns") content = gunSlots.map((slot) => field(slot)).join("");
   if (category === "salvage") {
     content = salvageSlots.map((slot, index) => {
-      const module = baseSlot(current, scraperSlots[index]);
-      return editGroup(slot, index ? "Bras droit" : "Bras gauche", "Baler S2 · " + module.name,
-        field(slot) + field(scraperSlots[index], { note: module.salvageMode === "tractor"
+      const slots = salvageModuleSlots(slot);
+      const equipped = slots.filter(id => baseSlot(current, id)).length;
+      return editGroup(slot, index ? "Bras droit" : "Bras gauche", "Baler S2 · " + equipped + "/2 modules",
+        field(slot) + slots.map(id => field(id, { note: baseSlot(current, id)?.salvageMode === "tractor"
           ? "Rayon tracteur pour manipuler les épaves · aucun décapage RMC."
-          : "Module de décapage interchangeable · compare ses effets et sa qualité de fabrication." }), true);
+          : "Module interchangeable · choix indépendant et qualité du blueprint." })).join(""), true);
     }).join("")
-      + '<p class="panel-note">Abrade, Cinch, Trawler ou ReadyGrip, au choix sur chaque bras. Le montage conserve les deux emplacements occupés d’origine.</p>';
+      + '<p class="panel-note">Deux modules par tête Baler : Abrade, Cinch, Trawler ou ReadyGrip. D’origine, un Abrade par bras ; le second emplacement est facultatif et se complète en station. Les deux modules restent des modes distincts, leurs coefficients ne s’additionnent pas.</p>';
   }
   if (category === "cargo") {
     const capacity = format(sum(current, podSlots, "cargo"));
@@ -392,8 +394,9 @@ function renderComparison() {
   if (category === "salvage") {
     rows = scraperSlots.flatMap((slot) => ["scrapeSpeed", "scrapeRadius", "scrapeEfficiency"].map((stat) =>
       comparisonRow(slot, stat, labels[slot] + " · " + statLabels[stat][0].toLowerCase())));
-    const tractors = scraperSlots.filter(slot => baseSlot(current, slot).salvageMode === "tractor").map(slot => labels[slot]);
+    const tractors = scraperSlots.filter(slot => baseSlot(current, slot)?.salvageMode === "tractor").map(slot => labels[slot]);
     note = "Modules sélectionnés comparés aux Abrade d’origine, qualité de fabrication comprise. Vitesse, rayon et efficacité s’interprètent ensemble ; ces coefficients ne sont pas un débit en SCU/min. Tampon commun de 40 SCU, soute externe de 32 SCU."
+      + " Chaque emplacement conserve ses propres valeurs ; les deux modules d’une tête sont des modes distincts."
       + (tractors.length ? " Rayon tracteur sans décapage : " + tractors.join(", ") + "." : "");
   }
   if (category === "guns") {
@@ -673,3 +676,5 @@ SavedConfigurations.mount({
     commitLoadout("Configuration enregistrée chargée.");
   }
 });
+
+ShipNavigation.mount("hyun");

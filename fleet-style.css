@@ -1,8 +1,5 @@
 body { font-size: 1rem; }
 .patch,.eyebrow,.mode,.brand,.page-links,.fan-notice,.fan-footer { font-size: .875rem; }
-.fleet-picker { margin-top: 22px; padding: 18px 22px; display: grid; grid-template-columns: 1fr minmax(230px, .8fr); gap: 20px; align-items: center; }
-.fleet-picker .eyebrow { margin-bottom: 5px; }
-.fleet-picker .field label { margin-bottom: 6px; }
 .fleet-hero { min-height: 240px; }
 .fleet-hero .hero-copy { padding-block: 45px; min-height: 240px; }
 .fleet-hero h1 { font-size: clamp(2.8rem,6vw,4.5rem); max-width: 60%; }
@@ -45,5 +42,5 @@ body { font-size: 1rem; }
 .sources { font-size: .875rem; }
 .route-results { min-width: 0; }.route-fields { grid-template-columns: 100px minmax(0,1fr); }
 @media(max-width:900px) { .workspace { grid-template-columns: minmax(275px,1fr) minmax(0,1.5fr); }.route-layout { grid-template-columns: 1fr; } }
-@media(max-width:700px) { .workspace { grid-template-columns: 1fr; }.fleet-picker { grid-template-columns: 1fr; padding: 16px; gap: 12px; }.fleet-hero .hero-copy { padding: 26px 18px; min-height: 230px; }.fleet-hero h1 { max-width: 70%; font-size: 2.9rem; }.fleet-hero .hero-sub { max-width: 70%; }.fleet-hero .hero-image { inset-inline-start: 18%; }.metrics { grid-template-columns: repeat(3,minmax(0,1fr)); }.metric { padding: 10px 8px; }.metric div,.metric h3 { font-size: .875rem; }.comparison th:first-child { width: 31%; }.comparison th:last-child { width: 16%; }th,td { padding: 9px 5px; }.route { padding: 13px; } }
+@media(max-width:700px) { .workspace { grid-template-columns: 1fr; }.fleet-hero .hero-copy { padding: 26px 18px; min-height: 230px; }.fleet-hero h1 { max-width: 70%; font-size: 2.9rem; }.fleet-hero .hero-sub { max-width: 70%; }.fleet-hero .hero-image { inset-inline-start: 18%; }.metrics { grid-template-columns: repeat(3,minmax(0,1fr)); }.metric { padding: 10px 8px; }.metric div,.metric h3 { font-size: .875rem; }.comparison th:first-child { width: 31%; }.comparison th:last-child { width: 16%; }th,td { padding: 9px 5px; }.route { padding: 13px; } }
 @media(max-width:420px) { .metrics { grid-template-columns: 1fr; }.metric p strong { font-size: 1.8rem; }.metric p { margin-bottom: 4px; }.fleet-hero .hero-sub { max-width: 80%; }.fleet-hero h1 { max-width: 85%; }.comparison th:last-child,.comparison td:last-child { padding-right: 6px; }.comparison th:first-child { padding-left: 7px; } }

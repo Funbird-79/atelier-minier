@@ -638,3 +638,5 @@ SavedConfigurations.mount({
     commitLoadout("Configuration enregistrée chargée.");
   }
 });
+
+ShipNavigation.mount("mole");

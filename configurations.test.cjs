@@ -43,6 +43,10 @@ for (const context of contexts) {
     const part = context.data ? context.data.parts[id] : context.parts.scraper.find(part=>part.id===id);
     snapshot[scraper] = {id, quality:part.recipe.ingredients.map(ingredient=>Math.max(800,ingredient.min))};
   }
+  if (context.id==='hyun') {
+    snapshot.scraper2={id:'salvage_modifier_scraper_small',quality:[1000,1000,1000]};
+    snapshot.scraper3={id:'salvage_modifier_tractor_small',quality:null};
+  }
   const valid = context.normalize(snapshot);
   equal(valid, snapshot, context.id + ': fixture includes valid crafting quality and paint');
   const make = () => context.store.createStore(storage, context, context.normalize);
@@ -83,6 +87,25 @@ for (const context of contexts) {
 }
 
 const context = contexts[0], store = context.store.createStore(storage,context,context.normalize);
+const hyun=contexts.find(context=>context.id==='hyun');
+const legacy=clone(hyun.defaults());delete legacy.scraper2;delete legacy.scraper3;
+legacy.scraper0={id:'salvage_modifier_scraper_large',quality:[800,800,800]};
+const legacyRecord={id:'old-hyun',name:'Ancienne configuration',savedAt:'2026-11-24T12:00:00.000Z',loadout:legacy};
+let oldBytes=JSON.stringify({version:1,records:[legacyRecord],deleted:null});
+const beforeMigration=oldBytes;
+const oldStore=hyun.store.createStore({getItem:()=>oldBytes,setItem:(key,value)=>{oldBytes=value;}},hyun,hyun.normalize);
+const migrated=oldStore.load('old-hyun').loadout;
+equal(Object.fromEntries(Object.entries(migrated).filter(([key])=>!['scraper2','scraper3'].includes(key))),legacy,'Hyun: old named saves preserve every existing component and quality');
+equal(migrated.scraper2,{id:null,quality:null},'Hyun: legacy save gains an empty second left module');
+equal(migrated.scraper3,{id:null,quality:null},'Hyun: legacy save gains an empty second right module');
+check(oldBytes===beforeMigration,'Loading a legacy save does not rewrite the stored original');
+const legacyFile={format:'atelier-minier-configuration',version:1,ship:{id:'hyun',name:'Gatac Hyūn'},name:'Ancien export',loadout:legacy};
+const importedLegacy=oldStore.importText(JSON.stringify(legacyFile));
+equal(oldStore.load(importedLegacy.id).loadout,migrated,'Hyun: previous JSON exports import without losing the setup');
+const missingOccupied=clone(legacy);delete missingOccupied.drive;
+rejects(()=>oldStore.save('Invalid missing drive',missingOccupied),/incompatibles/);
+const extraPort=clone(migrated);extraPort.scraper4={id:null,quality:null};
+rejects(()=>oldStore.save('Invalid extra slot',extraPort),/incompatibles/);
 rejects(()=>store.importText('not json'), /lisible/);
 rejects(()=>store.importText('{}'), /compatible/);
 rejects(()=>store.importText('x'.repeat(250001)), /volumineux/);

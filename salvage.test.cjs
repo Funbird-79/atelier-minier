@@ -7,7 +7,7 @@ vm.createContext(fleet); vm.createContext(hyun);
 vm.runInContext(read('fleet-data.js') + read('fleet-model.js')
   + ';globalThis.data=FLEET_DATA;globalThis.model=FleetModel;', fleet);
 vm.runInContext(read('hyun-data.js') + read('hyun-model.js')
-  + ';globalThis.data=ARGO_DATA;globalThis.model={defaults:defaultLoadout,restore:restoreLoadout,stats:loadoutStats};', hyun);
+  + ';globalThis.data=ARGO_DATA;globalThis.model={defaults:defaultLoadout,restore:restoreLoadout,stats:loadoutStats,modules:salvageModuleSlots};', hyun);
 const ids = ['salvage_modifier_scraper_medium', 'salvage_modifier_scraper_small',
   'salvage_modifier_scraper_large', 'salvage_modifier_tractor_small'];
 let checks = 0;
@@ -36,7 +36,9 @@ for (const [name, count] of [['vulture',4],['fortune',2],['moth',6],['reclaimer'
   near(fleet.model.stats(loaded,selected.id).scrapeEfficiency, 112, name + ': Q800 module efficiency follows ingredient curves');
 }
 check(hyun.data.parts.scraper.length===4 && ids.every(id=>hyun.data.parts.scraper.some(part=>part.id===id)), 'Hyun has the same four Baler modules');
-for (const slot of ['scraper0','scraper1']) {
+check(hyun.model.defaults('stock').scraper2.id===null && hyun.model.defaults('stock').scraper3.id===null,'Hyun: second modules are optional and empty in the stock loadout');
+check(JSON.stringify(hyun.model.modules('salvage0'))==='["scraper0","scraper2"]' && JSON.stringify(hyun.model.modules('salvage1'))==='["scraper1","scraper3"]','Hyun: each arm has two independent modules and original left/right IDs are preserved');
+for (const slot of ['scraper0','scraper1','scraper2','scraper3']) {
   const mount = hyun.model.defaults('stock');
   mount[slot]={id:ids[0],quality:[800,800,800]};
   const loaded=hyun.model.restore(mount);
@@ -47,6 +49,14 @@ for (const slot of ['scraper0','scraper1']) {
   check(hyun.model.restore(mount)[slot].id===ids[3],'Hyun: ReadyGrip survives reload');
   check(hyun.model.stats(hyun.model.restore(mount),slot).scrapeSpeed===undefined,'Hyun: ReadyGrip does not claim RMC output');
 }
+const paired=hyun.model.defaults('stock');
+paired.scraper0={id:ids[0],quality:[800,800,800]};paired.scraper2={id:ids[1],quality:[1000,1000,1000]};
+paired.scraper1={id:ids[2],quality:[500,500,500]};paired.scraper3={id:ids[3],quality:null};
+const reloaded=hyun.model.restore(JSON.parse(JSON.stringify(paired)));
+check(JSON.stringify(reloaded)===JSON.stringify(paired),'Hyun: four distinct modules and their independent qualities survive reload');
+near(hyun.model.stats(reloaded,'scraper0').scrapeSpeed,0.168,'A second module does not add its coefficient to the first');
+paired.scraper2={id:null,quality:null};
+check(hyun.model.restore(paired).scraper2.id===null && hyun.model.restore(paired).scraper0.id===ids[0],'Hyun: removing the optional second module preserves the first');
 check(fleet.data.parts[ids[3]].salvageMode==='tractor' && fleet.data.parts[ids[3]].stats.scrapeEfficiency===undefined,'ReadyGrip is identified as a tractor, not a 100% scraper');
 const salvation=fleet.data.ships.find(ship=>ship.id==='salvation');
 for (const slot of fleet.model.slotsOf(salvation,'scraper')) {

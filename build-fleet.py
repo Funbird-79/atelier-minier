@@ -230,6 +230,7 @@ for slug, class_name, name, role, image_source in SPECS:
     counts = Counter()
     slots = []
     paths = {}
+    salvage_module_counts = Counter()
     for port in walk(source['Loadout']):
         kind = port.get('Type', '').split('.')[0]
         cid = port.get('ClassName', '').lower()
@@ -250,7 +251,8 @@ for slug, class_name, name, role, image_source in SPECS:
                 'path': '/'.join(port.get('Path', []))}
         if group == 'scraper':
             slot['parent'] = paths.get(port.get('ParentPortId'))
-            slot['label'] += ' · tête ' + str(int(slot['parent'].removeprefix('salvage')) + 1)
+            salvage_module_counts[slot['parent']] += 1
+            slot['label'] = 'Module ' + str(salvage_module_counts[slot['parent']]) + ' · tête ' + str(int(slot['parent'].removeprefix('salvage')) + 1)
         slots.append(slot)
         paths[port.get('PortId')] = key
         if group == 'laser':
@@ -329,6 +331,9 @@ if args.update_hyun_salvage:
     hyun_path = ROOT / 'hyun-data.js'
     hyun = json.loads(hyun_path.read_text().removeprefix('const ARGO_DATA = ').strip().removesuffix(';'))
     hyun['parts']['scraper'] = [parts[cid] for cid in BALER_MODULES]
+    for profile in ['stock', 'balanced']:
+        for slot in ['scraper2', 'scraper3']:
+            hyun[profile].setdefault(slot, None)
     hyun_path.write_text('const ARGO_DATA = ' + json.dumps(hyun, ensure_ascii=False, separators=(',', ':')) + ';\n')
 for ship in fleet:
     print(ship['name'], len(ship['slots']), 'emplacements', 'soute', ship['cargo'], 'tampon', ship['buffer'])

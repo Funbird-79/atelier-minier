@@ -7,7 +7,9 @@ const shieldSlots = ["shield0", "shield1"];
 const coolerSlots = ["cooler0", "cooler1"];
 const podSlots = ["pod0", "pod1", "pod2", "pod3"];
 const salvageSlots = ["salvage0", "salvage1"];
-const scraperSlots = ["scraper0", "scraper1"];
+// Preserve the two original slot IDs so older saves keep their left/right arms.
+const salvageModuleSlots = slot => slot === "salvage0" ? ["scraper0", "scraper2"] : ["scraper1", "scraper3"];
+const scraperSlots = salvageSlots.flatMap(salvageModuleSlots);
 const moduleSlots = (slot) => Array.from({ length: 3 }, (_, i) => "module" + slot.at(-1) + "-" + i);
 const profiles = { balanced: ARGO_DATA.balanced, stock: stockIds };
 const componentIndex = new Map(Object.values(ARGO_DATA.parts).flat().map((part) => [part.id, part]));

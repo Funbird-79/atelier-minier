@@ -114,6 +114,17 @@ function renderFields() {
   const slots = ship.slots.filter(slot => slot.category === category && slotEnabled(slot));
   if (!slots.length) { container.innerHTML = '<p class="panel-note">La soute cargo est fixe : ' + fmt(ship.cargo) + ' SCU. Le tampon de salvage est affiché séparément.</p>'; return; }
   if (category === "mining" || category === "cargo") { container.innerHTML = slots.map(field).join(""); return; }
+  if (category === "salvage") {
+    const heads = slots.filter(slot => slot.group === "salvage");
+    const grouped = new Set();
+    container.innerHTML = heads.map(head => {
+      const modules = slots.filter(slot => slot.group === "scraper" && slot.parent === head.id);
+      [head, ...modules].forEach(slot => grouped.add(slot.id));
+      const detail = modules.length + " module" + (modules.length > 1 ? "s indépendants" : " dédié");
+      return `<details class="group-edit" data-group="${head.id}" ${changed || opened.has(head.id) ? "open" : ""}><summary>${escapeHtml(head.label)}<span>${detail}</span></summary><div class="fields">${[head, ...modules].map(field).join("")}</div></details>`;
+    }).join("") + slots.filter(slot => !grouped.has(slot.id)).map(field).join("");
+    return;
+  }
   const groups = [...new Set(slots.map(slot => slot.group))];
   container.innerHTML = groups.map(group => {
     const members = slots.filter(slot => slot.group === group);
@@ -188,7 +199,7 @@ function renderComparison() {
       }
     }
     const tractors = F.slotsOf(ship, "scraper").filter(slot => F.item(current, slot.id)?.salvageMode === "tractor").map(slot => slot.label);
-    note = "Modules sélectionnés comparés au montage d’origine, qualité de fabrication comprise. Vitesse, rayon et efficacité s’interprètent ensemble. Le rendement réel dépend aussi du vaisseau et de l’alignement sur la coque ; ces coefficients ne sont pas un débit en SCU/min."
+    note = "Modules sélectionnés comparés au montage d’origine, qualité de fabrication comprise. Les deux modules d’une tête sont des modes distincts : leurs coefficients ne s’additionnent pas. Vitesse, rayon et efficacité s’interprètent ensemble. Le rendement réel dépend aussi du vaisseau et de l’alignement sur la coque ; ces coefficients ne sont pas un débit en SCU/min."
       + (tractors.length ? " Rayon tracteur sans décapage : " + tractors.join(", ") + "." : "");
   }
   if (category === "guns") {
@@ -293,7 +304,7 @@ function renderCraft() {
     + (unsupported.length ? " Certains effets de ce plan ne sont pas chiffrés dans ce comparateur." : "");
 }
 
-el("ship-picker").addEventListener("change", event => selectShip(event.target.value));
+ShipNavigation.mount(() => ship?.id ?? "prospector", selectShip);
 document.querySelector(".equipment-tabs").addEventListener("click", event => {
   const button = event.target.closest("[data-category]");
   if (button) { category = button.dataset.category; render(); }

@@ -26,7 +26,13 @@ const SavedConfigurations = (() => {
     let restored;
     try { restored = normalize(copy(loadout)); }
     catch { throw new Error("Cette configuration ne convient pas à ce vaisseau."); }
-    if (!sameLoadout(loadout, restored)) throw new Error("Cette configuration contient des composants ou des qualités incompatibles avec ce vaisseau.");
+    // New optional empty ports must not invalidate existing saves and exports.
+    // Missing occupied ports and invalid existing records still fail validation.
+    const upgraded = copy(loadout);
+    for (const [key, record] of Object.entries(restored)) {
+      if (!Object.hasOwn(upgraded, key) && record.id === null && record.quality === null) upgraded[key] = copy(record);
+    }
+    if (!sameLoadout(upgraded, restored)) throw new Error("Cette configuration contient des composants ou des qualités incompatibles avec ce vaisseau.");
     return copy(restored);
   }
   const newId = () => "config-" + (globalThis.crypto?.randomUUID?.() ?? Date.now().toString(36) + Math.random().toString(36).slice(2));

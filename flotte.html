@@ -7,25 +7,27 @@
   <meta name="description" content="Configure les vaisseaux de minage et de salvage de Star Citizen. Compositions d’origine, composants compatibles, pods et blueprints.">
   <title>Atelier minier · Flotte de minage et salvage</title>
   <link rel="stylesheet" href="style.css?v=2">
-  <link rel="stylesheet" href="fleet-style.css?v=1">
+  <link rel="stylesheet" href="fleet-style.css?v=2">
   <link rel="stylesheet" href="configurations.css?v=1">
-  <script src="configurations.js?v=1" defer></script>
-  <script src="fleet-data.js?v=2" defer></script>
+  <link rel="stylesheet" href="ship-navigation.css?v=1">
+  <script src="ship-navigation.js?v=1" defer></script>
+  <script src="configurations.js?v=2" defer></script>
+  <script src="fleet-data.js?v=3" defer></script>
   <script src="fleet-model.js?v=1" defer></script>
-  <script src="fleet-app.js?v=3" defer></script>
+  <script src="fleet-app.js?v=4" defer></script>
 </head>
 <body>
   <header class="top"><div class="wrap top-inner"><div class="brand"><i aria-hidden="true"></i> ATELIER MINIER</div><div class="patch">STAR CITIZEN <strong>4.10.3</strong></div></div></header>
   <main class="wrap">
-    <section class="fleet-picker panel" aria-labelledby="fleet-title">
-      <div><p class="eyebrow">MINAGE &amp; SALVAGE</p><h2 id="fleet-title">Choisis ton vaisseau</h2></div>
-      <div class="field"><label for="ship-picker">Vaisseau</label><select id="ship-picker"><optgroup label="Minage"><option value="prospector">MISC Prospector</option><option value="golem">Drake Golem</option><option value="mole">ARGO MOLE</option></optgroup><optgroup label="Minage et salvage"><option value="hyun">Gatac Hyūn</option></optgroup><optgroup label="Salvage"><option value="vulture">Drake Vulture</option><option value="fortune">MISC Fortune</option><option value="salvation">RSI Salvation</option><option value="moth">ARGO MOTH</option><option value="reclaimer">Aegis Reclaimer</option></optgroup></select></div>
+    <section class="panel ship-picker" aria-labelledby="ship-picker-title">
+      <div><p class="eyebrow">MINAGE &amp; SALVAGE</p><h2 id="ship-picker-title">Choisis ton vaisseau</h2></div>
+      <div class="field"><label for="ship-picker">Vaisseau</label><select id="ship-picker"></select></div>
     </section>
     <section class="hero fleet-hero" aria-labelledby="ship-title">
       <div class="hero-image"><img id="ship-image" src="fleet-prospector.webp" alt="MISC Prospector en opération de minage" width="1280" height="768"><span class="visual-credit">© Cloud Imperium Rights LLC / Ltd.</span></div>
       <div class="hero-copy"><p class="eyebrow" id="ship-role">MINAGE SOLO</p><h1 id="ship-title">MISC <span>Prospector</span></h1><p class="hero-sub" id="ship-summary">Nyx · Stanton · Pyro</p></div>
     </section>
-    <nav class="page-links" aria-label="Navigation"><a href="index.html">ARGO MOLE</a><a href="hyun.html">Gatac Hyūn</a><a href="flotte.html" aria-current="page">Tous les vaisseaux</a><a href="#route">Trajets</a><a id="image-source" href="https://robertsspaceindustries.com/en/comm-link/transmission/18553-Alpha-317-Has-Launched" target="_blank" rel="noopener noreferrer">Source du visuel</a></nav>
+    <nav class="page-links" aria-label="Navigation"><a href="#route">Trajets</a><a id="image-source" href="https://robertsspaceindustries.com/en/comm-link/transmission/18553-Alpha-317-Has-Launched" target="_blank" rel="noopener noreferrer">Source du visuel</a></nav>
     <p class="fan-notice">Site communautaire indépendant du groupe Cloud Imperium. <a href="https://robertsspaceindustries.com/">Site officiel de Star Citizen</a></p>
     <div class="workspace">
       <section class="panel setup" aria-labelledby="setup-title">
