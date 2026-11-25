@@ -339,6 +339,9 @@ function renderMiningHud() {
 function renderComparison() {
   renderPaintPreview();
   renderMiningHud();
+  CapacitySummary.render(byId("capacity-summary"), {
+    ore: sum(current, podSlots, "cargo"), cargo: ARGO_DATA.cargo, buffer: ARGO_DATA.buffer
+  });
   byId("salvage-guide").hidden = category !== "salvage";
   const drive = loadoutStats(current, "drive");
   const shield = { shield: sum(current, shieldSlots, "shield") };

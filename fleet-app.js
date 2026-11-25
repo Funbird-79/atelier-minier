@@ -247,8 +247,10 @@ function render() {
   el("metric-range").textContent = fmt(ship.fuel / quantum.burn);
   el("metric-shield").textContent = fmt(F.sum(ship, current, "shield", "shield"));
   el("fuel-label").textContent = "Sur un plein de " + fmt(ship.fuel, 2) + " SCU";
-  el("capacity-summary").innerHTML = [["Minerai monté", F.sum(ship, current, "pod", "cargo")], ["Soute cargo", ship.cargo], ["Tampon salvage", ship.buffer]]
-    .filter(([, value], index) => value > 0 || index === 0 && ship.ore > 0).map(([label, value]) => `<div>${label}<strong>${fmt(value)} SCU</strong></div>`).join("");
+  CapacitySummary.render(el("capacity-summary"), {
+    ore: ship.ore > 0 ? F.sum(ship, current, "pod", "cargo") : null,
+    cargo: ship.cargo, buffer: ship.buffer > 0 ? ship.buffer : null
+  });
   renderFields(); renderComparison(); renderMining(); renderScraper(); renderRoute();
 }
 

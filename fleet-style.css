@@ -16,9 +16,6 @@ body { font-size: 1rem; }
 .equipment-tabs button { flex-basis: 29%; min-height: 40px; }
 .save-state { color: var(--muted); margin: 14px 0 0; line-height: 1.5; }
 .recommendation { line-height: 1.6; }
-.industrial-summary { padding: 12px 15px; display: flex; flex-wrap: wrap; gap: 10px 22px; margin-bottom: 14px; }
-.industrial-summary div { font-size: .875rem; color: var(--muted); }
-.industrial-summary strong { color: var(--text); display: block; margin-top: 3px; font: 650 1.3rem var(--mono); }
 .comparison th:first-child { width: 35%; }
 .comparison th:last-child { width: 16%; }
 .comparison td { overflow-wrap: anywhere; }

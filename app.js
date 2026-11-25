@@ -318,6 +318,9 @@ function renderMiningHud() {
 function renderComparison() {
   renderPaintPreview();
   renderMiningHud();
+  CapacitySummary.render(byId("capacity-summary"), {
+    ore: sum(current, podSlots, "cargo"), cargo: ARGO_DATA.cargo
+  });
   const drive = loadoutStats(current, "drive");
   const shield = loadoutStats(current, "shield");
   const currentRange = fuelCapacity / drive.burn;
